@@ -22,10 +22,7 @@ const PROMPTS: PromptCard[] = promptsData as PromptCard[];
 
 const MODELS: { value: string; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "gpt-image", label: "GPT Image" },
   { value: "midjourney", label: "Midjourney" },
-  { value: "dalle", label: "DALL·E" },
-  { value: "seedance", label: "Seedance" },
   { value: "nano-banana", label: "Nano Banana" },
   { value: "chatgpt", label: "ChatGPT" },
 ];
@@ -70,7 +67,7 @@ export default function Home() {
               </div>
               <span className="font-bold text-base">Prompt<span className="text-[#f07651]">Hub</span></span>
             </div>
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-1 overflow-x-auto">
               {MODELS.map((m) => (
                 <button
                   key={m.value}
@@ -126,7 +123,7 @@ export default function Home() {
 
       {/* Masonry Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+        <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
           {filtered.map((prompt) => (
             <div
               key={prompt.id}
