@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-
-type Model = "all" | "gpt-image" | "midjourney" | "dalle" | "seedance" | "nano-banana" | "chatgpt";
+import promptsData from "../../public/prompts-data.json";
 
 interface PromptCard {
   id: number;
   image: string;
   title: string;
-  model: Model;
+  model: string;
   modelLabel: string;
   likes: number;
   views: number;
@@ -19,28 +18,9 @@ interface PromptCard {
   tags: string[];
 }
 
-const PROMPTS: PromptCard[] = [
-  { id: 1, image: "https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=600&q=80", title: "Man in elegant perfume ad", model: "gpt-image", modelLabel: "GPT Image", likes: 1243, views: 12430, creator: "PromptMaster", category: "Fashion", prompt: "A cinematic portrait of a confident man in a tailored suit, soft golden lighting, luxury perfume advertisement style, shallow depth of field, warm tones", tags: ["portrait", "luxury", "fashion", "cinematic"] },
-  { id: 2, image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&q=80", title: "Cyberpunk city at night", model: "midjourney", modelLabel: "Midjourney", likes: 2891, views: 45210, creator: "CyberArt", category: "Sci-Fi", prompt: "Cyberpunk city street at night, neon signs reflecting on wet asphalt, flying cars, rain, volumetric lighting, blade runner aesthetic, highly detailed --ar 16:9 --v 6", tags: ["cyberpunk", "neon", "city", "night"] },
-  { id: 3, image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&q=80", title: "Abstract fluid sculpture", model: "nano-banana", modelLabel: "Nano Banana Pro", likes: 756, views: 8920, creator: "ArtAI", category: "Abstract", prompt: "Abstract fluid sculpture, vibrant colors, organic shapes, marble texture, smooth gradients, 3D render style, soft lighting", tags: ["abstract", "sculpture", "colorful", "3d"] },
-  { id: 4, image: "https://images.unsplash.com/photo-1574169208507-84376144848b?w=600&q=80", title: "Ethereal forest spirit", model: "dalle", modelLabel: "DALL·E", likes: 1567, views: 23400, creator: "DreamWeaver", category: "Fantasy", prompt: "Ethereal forest spirit made of glowing blue light, ancient oak trees, fireflies, misty morning, photorealistic, magical atmosphere", tags: ["fantasy", "spirit", "forest", "magical"] },
-  { id: 5, image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80", title: "Minimalist mountain logo", model: "gpt-image", modelLabel: "GPT Image", likes: 543, views: 6780, creator: "LogoPro", category: "Design", prompt: "Minimalist mountain logo design, clean geometric lines, two peaks, sunrise behind, vector style, simple color palette, white background", tags: ["logo", "minimal", "mountain", "design"] },
-  { id: 6, image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&q=80", title: "Surreal desert landscape", model: "midjourney", modelLabel: "Midjourney", likes: 2101, views: 32100, creator: "SurrealVisions", category: "Landscape", prompt: "Surreal desert landscape, crystal clear oasis mirroring purple sky, geometric rock formations, vibrant sunset, ultra-detailed, National Geographic style --ar 3:2 --v 6", tags: ["desert", "surreal", "landscape", "sunset"] },
-  { id: 7, image: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600&q=80", title: "Vintage camera product", model: "dalle", modelLabel: "DALL·E", likes: 876, views: 10900, creator: "ProductPro", category: "Product", prompt: "Vintage film camera on marble surface, soft studio lighting, warm sepia tones, commercial product photography, 8K, professional grade", tags: ["product", "vintage", "camera", "commercial"] },
-  { id: 8, image: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=600&q=80", title: "Futuristic car concept", model: "nano-banana", modelLabel: "Nano Banana Pro", likes: 1890, views: 28700, creator: "ConceptCars", category: "Automotive", prompt: "Futuristic sports car concept, aerodynamic design, glowing blue neon underglow, night setting, city background, photorealistic, 8K", tags: ["car", "futuristic", "concept", "neon"] },
-  { id: 9, image: "https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=600&q=80", title: "Japanese garden watercolor", model: "gpt-image", modelLabel: "GPT Image", likes: 654, views: 7890, creator: "WaterColorAI", category: "Art", prompt: "Japanese garden in watercolor style, cherry blossoms, koi pond, wooden bridge, soft pastel colors, painterly texture, elegant composition", tags: ["watercolor", "japanese", "garden", "painting"] },
-  { id: 10, image: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&q=80", title: "Cosmic nebula abstract", model: "midjourney", modelLabel: "Midjourney", likes: 3245, views: 56000, creator: "SpaceArt", category: "Space", prompt: "Colorful cosmic nebula, stars forming, deep space, vibrant purples and blues, ethereal glow, ultra HD, James Webb telescope aesthetic --ar 16:9 --v 6", tags: ["space", "nebula", "cosmic", "stars"] },
-  { id: 11, image: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=600&q=80", title: "Professional headshot studio", model: "dalle", modelLabel: "DALL·E", likes: 432, views: 5430, creator: "PortraitPro", category: "Portrait", prompt: "Professional corporate headshot, soft studio lighting, neutral gray background, confident smile, business attire, LinkedIn profile style", tags: ["portrait", "professional", "headshot", "corporate"] },
-  { id: 12, image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80", title: "Steampunk inventor workshop", model: "nano-banana", modelLabel: "Nano Banana Pro", likes: 1123, views: 16500, creator: "SteamPunk", category: "Fantasy", prompt: "Steampunk inventor workshop, brass gears, vintage tools, warm candle lighting, Victorian aesthetic, intricate details, cozy atmosphere", tags: ["steampunk", "workshop", "vintage", "brass"] },
-  { id: 13, image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80", title: "Abstract geometric pattern", model: "gpt-image", modelLabel: "GPT Image", likes: 987, views: 12300, creator: "PatternLab", category: "Abstract", prompt: "Abstract geometric pattern, repeating colorful shapes, modern art, vibrant gradients, wallpaper design, symmetrical composition, 4K", tags: ["abstract", "geometric", "pattern", "colorful"] },
-  { id: 14, image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=80", title: "Underwater coral reef", model: "midjourney", modelLabel: "Midjourney", likes: 1678, views: 25600, creator: "OceanArt", category: "Nature", prompt: "Vibrant underwater coral reef, tropical fish, sun rays piercing through water, crystal clear, rich colors, National Geographic underwater photography --ar 4:3 --v 6", tags: ["underwater", "coral", "reef", "ocean"] },
-  { id: 15, image: "https://images.unsplash.com/photo-1563089145-599997674d42?w=600&q=80", title: "Synthwave sunset drive", model: "seedance", modelLabel: "Seedance", likes: 2345, views: 38900, creator: "RetroWave", category: "Animation", prompt: "Synthwave sunset drive animation, 1980s aesthetic, purple and pink gradient sky, grid road, retro car silhouette, neon glow, VHS effect", tags: ["synthwave", "retro", "animation", "sunset"] },
-  { id: 16, image: "https://images.unsplash.com/photo-1536924940846-227afb31e968?w=600&q=80", title: "Gourmet food plating", model: "dalle", modelLabel: "DALL·E", likes: 765, views: 8900, creator: "FoodArt", category: "Food", prompt: "Gourmet dish plating, fine dining presentation, micro greens, sauce drizzle, soft natural lighting, restaurant quality, mouth-watering detail", tags: ["food", "gourmet", "plating", "dining"] },
-  { id: 17, image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=600&q=80", title: "Fashion editorial Vogue", model: "gpt-image", modelLabel: "GPT Image", likes: 1456, views: 19800, creator: "FashionAI", category: "Fashion", prompt: "High fashion editorial shot, bold colors, dramatic poses, studio lighting, avant-garde styling, Vogue magazine aesthetic, editorial quality", tags: ["fashion", "editorial", "vogue", "editorial"] },
-  { id: 18, image: "https://images.unsplash.com/photo-1559827291-2650f45c1a20?w=600&q=80", title: "Snowy mountain peak", model: "midjourney", modelLabel: "Midjourney", likes: 1987, views: 31200, creator: "NaturePro", category: "Landscape", prompt: "Snowy mountain peak at golden hour, dramatic clouds, alpine lake reflection, pine forest foreground, majestic, ultra-detailed --ar 16:9 --v 6", tags: ["mountain", "snow", "landscape", "golden-hour"] },
-];
+const PROMPTS: PromptCard[] = promptsData as PromptCard[];
 
-const MODELS: { value: Model; label: string }[] = [
+const MODELS: { value: string; label: string }[] = [
   { value: "all", label: "All" },
   { value: "gpt-image", label: "GPT Image" },
   { value: "midjourney", label: "Midjourney" },
@@ -52,9 +32,10 @@ const MODELS: { value: Model; label: string }[] = [
 
 export default function Home() {
   const [search, setSearch] = useState("");
-  const [model, setModel] = useState<Model>("all");
+  const [model, setModel] = useState("all");
   const [saved, setSaved] = useState<Set<number>>(new Set());
   const [selectedPrompt, setSelectedPrompt] = useState<PromptCard | null>(null);
+
 
   const filtered = PROMPTS.filter(
     (p) =>
