@@ -30,13 +30,16 @@ const MODELS: { value: string; label: string }[] = [
 export default function Home() {
   const [search, setSearch] = useState("");
   const [model, setModel] = useState("all");
+  const [category, setCategory] = useState("all");
   const [saved, setSaved] = useState<Set<number>>(new Set());
   const [selectedPrompt, setSelectedPrompt] = useState<PromptCard | null>(null);
 
+  const categories = Array.from(new Set(PROMPTS.map(p => p.category))).filter(Boolean);
 
   const filtered = PROMPTS.filter(
     (p) =>
       (model === "all" || p.model === model) &&
+      (category === "all" || p.category === category) &&
       (p.title.toLowerCase().includes(search.toLowerCase()) ||
         p.prompt.toLowerCase().includes(search.toLowerCase()) ||
         p.tags.some(t => t.includes(search.toLowerCase())))
@@ -110,14 +113,35 @@ export default function Home() {
           <span className="font-medium text-black">{filtered.length} prompts</span>
           <span>·</span>
           <span>{saved.size} saved</span>
-          <span>·</span>
-          <span className="flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            {PROMPTS.reduce((a, p) => a + p.views, 0).toLocaleString()} views
-          </span>
+        </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setCategory("all")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              category === "all"
+                ? "bg-black text-white"
+                : "bg-[#f5f5f5] text-[#525252] hover:bg-[#e5e5e5]"
+            }`}
+          >
+            All
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                category === cat
+                  ? "bg-black text-white"
+                  : "bg-[#f5f5f5] text-[#525252] hover:bg-[#e5e5e5]"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
 
